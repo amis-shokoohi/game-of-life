@@ -50,6 +50,36 @@ func main() {
 		}
 	}
 
+	var tMaxFPS float64 = 1000 / 60
+	var repaint js.Func
+	var lastTimestamp float64
+	repaint = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		timestamp := args[0].Float()
+		if timestamp-lastTimestamp >= tMaxFPS {
+			for y := 0; y < length; y++ {
+				for x := 0; x < length; x++ {
+					if currGen[y][x] == 1 {
+						ctx2d.Call("fillRect", x*res, y*res, res, res)
+					} else {
+						ctx2d.Call("clearRect", x*res, y*res, res, res)
+					}
+				}
+			}
+			evolve(&currGen, &nextGen, length)
+			// Copy nextGen to currGen
+			for y := 0; y < length; y++ {
+				for x := 0; x < length; x++ {
+					currGen[y][x] = nextGen[y][x]
+				}
+			}
+			lastTimestamp = timestamp
+		}
+		js.Global().Call("requestAnimationFrame", repaint)
+		return nil
+	})
+	defer repaint.Release()
+	js.Global().Call("requestAnimationFrame", repaint)
+
 	select {}
 }
 
