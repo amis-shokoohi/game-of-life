@@ -60,3 +60,44 @@ func createCell() uint8 {
 	}
 	return 0
 }
+
+func evolve(currGen *[][]uint8, nextGen *[][]uint8, length int) {
+	for y := 0; y < length; y++ {
+		for x := 0; x < length; x++ {
+			neighbors := 0
+			// Find number of neighbors
+			if (*currGen)[(y-1+length)%length][(x-1+length)%length] == 1 { // top left
+				neighbors++
+			}
+			if (*currGen)[(y-1+length)%length][(x+length)%length] == 1 { // top
+				neighbors++
+			}
+			if (*currGen)[(y-1+length)%length][(x+1+length)%length] == 1 { // top right
+				neighbors++
+			}
+			if (*currGen)[(y+length)%length][(x-1+length)%length] == 1 { // left
+				neighbors++
+			}
+			if (*currGen)[(y+length)%length][(x+1+length)%length] == 1 { // right
+				neighbors++
+			}
+			if (*currGen)[(y+1+length)%length][(x-1+length)%length] == 1 { // bottom left
+				neighbors++
+			}
+			if (*currGen)[(y+1+length)%length][(x+length)%length] == 1 { // bottom
+				neighbors++
+			}
+			if (*currGen)[(y+1+length)%length][(x+1+length)%length] == 1 { // bottom right
+				neighbors++
+			}
+			// GoL rules
+			if neighbors == 3 {
+				(*nextGen)[y][x] = 1
+			} else if neighbors == 2 && (*currGen)[y][x] == 1 {
+				(*nextGen)[y][x] = 1
+			} else {
+				(*nextGen)[y][x] = 0
+			}
+		}
+	}
+}
