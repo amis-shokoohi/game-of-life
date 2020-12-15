@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Game of Life</title>
 	<meta name="description" content="John Horton Conway's Game of Life written in Golang WASM">
-	<meta name="keywords" content="game of life, john horton conway, wasm, go, golang">
+	<meta name="keywords" content="game of life,wasm,webassembly,go,golang,canvas">
 	<meta name="author" content="https://github.com/amis-shokoohi">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="theme-color" content="#080810">
@@ -21,11 +21,6 @@
 			background-color: #080810;
 		}
 	</style>
-</head>
-<body>
-	<div class="container">
-		<canvas id="cnvs"></canvas>
-	</div>
 	<script src="wasm_exec.js"></script>
 	<script>
 		const go = new Go();
@@ -33,5 +28,6 @@
 			.instantiateStreaming(fetch("main.wasm"), go.importObject)
 			.then((result) => go.run(result.instance));
 	</script>
-</body>
+</head>
+<body></body>
 </html>

@@ -10,8 +10,8 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	document := js.Global().Get("document")
 
-	width := js.Global().Get("innerWidth").Int()
-	height := js.Global().Get("innerHeight").Int()
+	width := js.Global().Get("innerWidth").Int() - 2
+	height := js.Global().Get("innerHeight").Int() - 2
 	var length int
 	if height > width {
 		length = width
@@ -22,14 +22,12 @@ func main() {
 	res := 20
 	length = length - length%res
 
-	container := document.Call("querySelector", ".container")
-	container.Get("style").Set("width", length)
-	container.Get("style").Set("height", length)
-	container.Get("style").Set("border", "1px solid #464658")
-
 	cnvs := document.Call("getElementById", "cnvs")
 	cnvs.Set("width", length)
 	cnvs.Set("height", length)
+	cnvs.Get("style").Set("border", "1px solid #464658")
+	document.Get("body").Call("appendChild", cnvs)
+
 	ctx2d := cnvs.Call("getContext", "2d")
 	ctx2d.Set("fillStyle", "#78ABB7")
 
