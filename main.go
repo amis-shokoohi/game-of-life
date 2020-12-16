@@ -54,19 +54,16 @@ func main() {
 	repaint = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		timestamp := args[0].Float()
 		if timestamp-lastTimestamp >= tMaxFPS {
+			evolve(&currGen, &nextGen, length)
 			for y := 0; y < length; y++ {
 				for x := 0; x < length; x++ {
+					// Paint current cell
 					if currGen[y][x] == 1 {
 						ctx2d.Call("fillRect", x*res, y*res, res, res)
 					} else {
 						ctx2d.Call("clearRect", x*res, y*res, res, res)
 					}
-				}
-			}
-			evolve(&currGen, &nextGen, length)
-			// Copy nextGen to currGen
-			for y := 0; y < length; y++ {
-				for x := 0; x < length; x++ {
+					// Copy new cell to current cell
 					currGen[y][x] = nextGen[y][x]
 				}
 			}
