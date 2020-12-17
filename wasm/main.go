@@ -12,17 +12,16 @@ func main() {
 
 	width := js.Global().Get("innerWidth").Int() - 2
 	height := js.Global().Get("innerHeight").Int() - 2
-	var length int
+
+	length := height
 	if height > width {
 		length = width
-	} else {
-		length = height
 	}
 
 	res := 20
 	length = length - length%res
 
-	cnvs := document.Call("getElementById", "cnvs")
+	cnvs := document.Call("createElement", "canvas")
 	cnvs.Set("width", length)
 	cnvs.Set("height", length)
 	cnvs.Get("style").Set("border", "1px solid #464658")

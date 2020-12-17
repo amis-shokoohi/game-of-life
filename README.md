@@ -6,7 +6,7 @@ In order to build with **Go compiler**, run command below:
 ```
 $ make wasm
 ```
-In order to build with **Tinygo compiler**, run commanf below:
+In order to build with **Tinygo compiler**, run command below:
 ```
 $ make tinywasm
 ```
