@@ -87,31 +87,37 @@ func createCell() uint8 {
 
 func evolve(currGen *[][]uint8, nextGen *[][]uint8, length int) {
 	for y := 0; y < length; y++ {
+		top := (y - 1 + length) % length
+		currY := (y + length) % length
+		bottom := (y + 1 + length) % length
 		for x := 0; x < length; x++ {
+			left := (x - 1 + length) % length
+			currX := (x + length) % length
+			right := (x + 1 + length) % length
 			neighbors := 0
 			// Find number of neighbors
-			if (*currGen)[(y-1+length)%length][(x-1+length)%length] == 1 { // top left
+			if (*currGen)[top][left] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y-1+length)%length][(x+length)%length] == 1 { // top
+			if (*currGen)[top][currX] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y-1+length)%length][(x+1+length)%length] == 1 { // top right
+			if (*currGen)[top][right] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y+length)%length][(x-1+length)%length] == 1 { // left
+			if (*currGen)[currY][left] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y+length)%length][(x+1+length)%length] == 1 { // right
+			if (*currGen)[currY][right] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y+1+length)%length][(x-1+length)%length] == 1 { // bottom left
+			if (*currGen)[bottom][left] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y+1+length)%length][(x+length)%length] == 1 { // bottom
+			if (*currGen)[bottom][currX] == 1 {
 				neighbors++
 			}
-			if (*currGen)[(y+1+length)%length][(x+1+length)%length] == 1 { // bottom right
+			if (*currGen)[bottom][right] == 1 {
 				neighbors++
 			}
 			// GoL rules
