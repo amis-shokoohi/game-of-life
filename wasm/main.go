@@ -1,13 +1,10 @@
 package main
 
 import (
-	"math/rand"
 	"syscall/js"
-	"time"
 )
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	document := js.Global().Get("document")
 
 	width := js.Global().Get("innerWidth").Int() - 2
@@ -32,20 +29,7 @@ func main() {
 
 	length = length / res
 
-	// Allocate two 2D arrays
-	currGen := make([][]uint8, length, length)
-	nextGen := make([][]uint8, length, length)
-	for i := 0; i < length; i++ {
-		currGen[i] = make([]uint8, length, length)
-		nextGen[i] = make([]uint8, length, length)
-	}
-
-	// Create first generation
-	for y := 0; y < length; y++ {
-		for x := 0; x < length; x++ {
-			currGen[y][x] = createCell()
-		}
-	}
+	world := NewWorld(length, &ctx2d)
 
 	var tMaxFPS float64 = 1000 / 60
 	var repaint js.Func
@@ -53,19 +37,8 @@ func main() {
 	repaint = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		timestamp := args[0].Float()
 		if timestamp-lastTimestamp >= tMaxFPS {
-			evolve(&currGen, &nextGen, length)
-			for y := 0; y < length; y++ {
-				for x := 0; x < length; x++ {
-					// Paint current cell
-					if currGen[y][x] == 1 {
-						ctx2d.Call("fillRect", x*res, y*res, res, res)
-					} else {
-						ctx2d.Call("clearRect", x*res, y*res, res, res)
-					}
-					// Copy new cell to current cell
-					currGen[y][x] = nextGen[y][x]
-				}
-			}
+			world.Evolve()
+			world.Paint(res)
 			lastTimestamp = timestamp
 		}
 		js.Global().Call("requestAnimationFrame", repaint)
@@ -75,59 +48,4 @@ func main() {
 	js.Global().Call("requestAnimationFrame", repaint)
 
 	select {}
-}
-
-func createCell() uint8 {
-	chance := 20 // percent
-	if rand.Intn(100)+1 < chance {
-		return 1
-	}
-	return 0
-}
-
-func evolve(currGen *[][]uint8, nextGen *[][]uint8, length int) {
-	for y := 0; y < length; y++ {
-		top := (y - 1 + length) % length
-		currY := (y + length) % length
-		bottom := (y + 1 + length) % length
-		for x := 0; x < length; x++ {
-			left := (x - 1 + length) % length
-			currX := (x + length) % length
-			right := (x + 1 + length) % length
-			neighbors := 0
-			// Find number of neighbors
-			if (*currGen)[top][left] == 1 {
-				neighbors++
-			}
-			if (*currGen)[top][currX] == 1 {
-				neighbors++
-			}
-			if (*currGen)[top][right] == 1 {
-				neighbors++
-			}
-			if (*currGen)[currY][left] == 1 {
-				neighbors++
-			}
-			if (*currGen)[currY][right] == 1 {
-				neighbors++
-			}
-			if (*currGen)[bottom][left] == 1 {
-				neighbors++
-			}
-			if (*currGen)[bottom][currX] == 1 {
-				neighbors++
-			}
-			if (*currGen)[bottom][right] == 1 {
-				neighbors++
-			}
-			// GoL rules
-			if neighbors == 3 {
-				(*nextGen)[y][x] = 1
-			} else if neighbors == 2 && (*currGen)[y][x] == 1 {
-				(*nextGen)[y][x] = 1
-			} else {
-				(*nextGen)[y][x] = 0
-			}
-		}
-	}
 }
