@@ -10,7 +10,7 @@ import (
 type World struct {
 	length int
 	gen    [][]cell
-	ctx2d  *js.Value
+	ctx2d  js.Value
 }
 
 type cell struct {
@@ -19,7 +19,7 @@ type cell struct {
 }
 
 // NewWorld creates a new world and initializes first generation
-func NewWorld(length int, ctx2d *js.Value) *World {
+func NewWorld(length int, ctx2d js.Value) *World {
 	rand.Seed(time.Now().UnixNano())
 	// Create first generation
 	gen := make([][]cell, length, length)

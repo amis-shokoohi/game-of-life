@@ -29,7 +29,7 @@ func main() {
 
 	length = length / res
 
-	world := NewWorld(length, &ctx2d)
+	world := NewWorld(length, ctx2d)
 
 	var tMaxFPS float64 = 1000 / 60
 	var repaint js.Func
