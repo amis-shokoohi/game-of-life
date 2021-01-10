@@ -9,27 +9,23 @@ func main() {
 
 	width := js.Global().Get("innerWidth").Int() - 2
 	height := js.Global().Get("innerHeight").Int() - 2
-
-	length := height
-	if height > width {
-		length = width
+	if height < width {
+		width = height
 	}
 
-	res := 20
-	length = length - length%res
+	resolution := 20
+	width = width - width%resolution
 
-	cnvs := document.Call("createElement", "canvas")
-	cnvs.Set("width", length)
-	cnvs.Set("height", length)
-	cnvs.Get("style").Set("border", "1px solid #464658")
-	document.Get("body").Call("appendChild", cnvs)
+	canvas := document.Call("createElement", "canvas")
+	canvas.Set("width", width)
+	canvas.Set("height", width)
+	canvas.Get("style").Set("border", "1px solid #464658")
+	document.Get("body").Call("appendChild", canvas)
 
-	ctx2d := cnvs.Call("getContext", "2d")
+	ctx2d := canvas.Call("getContext", "2d")
 	ctx2d.Set("fillStyle", "#78ABB7")
 
-	length = length / res
-
-	world := NewWorld(length, ctx2d)
+	world := NewWorld(width, resolution, ctx2d)
 
 	var tMaxFPS float64 = 1000 / 60
 	var repaint js.Func
@@ -38,7 +34,7 @@ func main() {
 		timestamp := args[0].Float()
 		if timestamp-lastTimestamp >= tMaxFPS {
 			world.Evolve()
-			world.Paint(res)
+			world.Paint()
 			lastTimestamp = timestamp
 		}
 		js.Global().Call("requestAnimationFrame", repaint)

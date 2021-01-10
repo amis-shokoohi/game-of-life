@@ -8,9 +8,10 @@ import (
 
 // World is a 2D world
 type World struct {
-	length int
-	gen    [][]cell
-	ctx2d  js.Value
+	width      int
+	resolution int
+	gen        [][]cell
+	ctx2d      js.Value
 }
 
 type cell struct {
@@ -19,20 +20,22 @@ type cell struct {
 }
 
 // NewWorld creates a new world and initializes first generation
-func NewWorld(length int, ctx2d js.Value) *World {
+func NewWorld(width int, resolution int, ctx2d js.Value) *World {
 	rand.Seed(time.Now().UnixNano())
+	width = width / resolution
 	// Create first generation
-	gen := make([][]cell, length, length)
-	for y := 0; y < length; y++ {
-		gen[y] = make([]cell, length, length)
-		for x := 0; x < length; x++ {
+	gen := make([][]cell, width, width)
+	for y := 0; y < width; y++ {
+		gen[y] = make([]cell, width, width)
+		for x := 0; x < width; x++ {
 			gen[y][x] = createCell()
 		}
 	}
 	return &World{
-		length: length,
-		gen:    gen,
-		ctx2d:  ctx2d,
+		width:      width,
+		resolution: resolution,
+		gen:        gen,
+		ctx2d:      ctx2d,
 	}
 }
 
@@ -45,14 +48,14 @@ func createCell() cell {
 
 // Evolve creates next generation
 func (w *World) Evolve() {
-	for y := 0; y < w.length; y++ {
-		top := (y - 1 + w.length) % w.length
-		currY := (y + w.length) % w.length
-		bottom := (y + 1 + w.length) % w.length
-		for x := 0; x < w.length; x++ {
-			left := (x - 1 + w.length) % w.length
-			currX := (x + w.length) % w.length
-			right := (x + 1 + w.length) % w.length
+	for y := 0; y < w.width; y++ {
+		top := (y - 1 + w.width) % w.width
+		currY := (y + w.width) % w.width
+		bottom := (y + 1 + w.width) % w.width
+		for x := 0; x < w.width; x++ {
+			left := (x - 1 + w.width) % w.width
+			currX := (x + w.width) % w.width
+			right := (x + 1 + w.width) % w.width
 			// Find number of neighbors
 			neighbors := 0
 			if w.gen[top][left].currentState {
@@ -92,14 +95,14 @@ func (w *World) Evolve() {
 }
 
 // Paint updates canvas & copy nextGen to currGen
-func (w *World) Paint(res int) {
-	for y := 0; y < w.length; y++ {
-		for x := 0; x < w.length; x++ {
+func (w *World) Paint() {
+	for y := 0; y < w.width; y++ {
+		for x := 0; x < w.width; x++ {
 			// Paint current cell
 			if w.gen[y][x].currentState {
-				w.ctx2d.Call("fillRect", x*res, y*res, res, res)
+				w.ctx2d.Call("fillRect", x*w.resolution, y*w.resolution, w.resolution, w.resolution)
 			} else {
-				w.ctx2d.Call("clearRect", x*res, y*res, res, res)
+				w.ctx2d.Call("clearRect", x*w.resolution, y*w.resolution, w.resolution, w.resolution)
 			}
 			// Copy new cell to current cell
 			w.gen[y][x].currentState = w.gen[y][x].futureState
