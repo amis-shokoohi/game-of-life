@@ -8,40 +8,39 @@ import (
 
 // World is a 2D world
 type World struct {
-	length  int
-	currGen *[][]uint8
-	nextGen *[][]uint8
-	ctx2d   *js.Value
+	length int
+	gen    [][]cell
+	ctx2d  *js.Value
+}
+
+type cell struct {
+	currentState bool
+	futureState  bool
 }
 
 // NewWorld creates a new world and initializes first generation
 func NewWorld(length int, ctx2d *js.Value) *World {
 	rand.Seed(time.Now().UnixNano())
-	// Allocate two 2D arrays
-	currGen := make([][]uint8, length, length)
-	nextGen := make([][]uint8, length, length)
 	// Create first generation
+	gen := make([][]cell, length, length)
 	for y := 0; y < length; y++ {
-		currGen[y] = make([]uint8, length, length)
-		nextGen[y] = make([]uint8, length, length)
+		gen[y] = make([]cell, length, length)
 		for x := 0; x < length; x++ {
-			currGen[y][x] = createCell()
+			gen[y][x] = createCell()
 		}
 	}
 	return &World{
-		length:  length,
-		currGen: &currGen,
-		nextGen: &nextGen,
-		ctx2d:   ctx2d,
+		length: length,
+		gen:    gen,
+		ctx2d:  ctx2d,
 	}
 }
 
-func createCell() uint8 {
-	chance := 20 // percent
-	if rand.Intn(100)+1 < chance {
-		return 1
+func createCell() cell {
+	if rand.Intn(10)+1 < 2 { // chance of creation = 20%
+		return cell{currentState: true}
 	}
-	return 0
+	return cell{currentState: false}
 }
 
 // Evolve creates next generation
@@ -54,39 +53,39 @@ func (w *World) Evolve() {
 			left := (x - 1 + w.length) % w.length
 			currX := (x + w.length) % w.length
 			right := (x + 1 + w.length) % w.length
-			neighbors := 0
 			// Find number of neighbors
-			if (*w.currGen)[top][left] == 1 {
+			neighbors := 0
+			if w.gen[top][left].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[top][currX] == 1 {
+			if w.gen[top][currX].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[top][right] == 1 {
+			if w.gen[top][right].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[currY][left] == 1 {
+			if w.gen[currY][left].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[currY][right] == 1 {
+			if w.gen[currY][right].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[bottom][left] == 1 {
+			if w.gen[bottom][left].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[bottom][currX] == 1 {
+			if w.gen[bottom][currX].currentState {
 				neighbors++
 			}
-			if (*w.currGen)[bottom][right] == 1 {
+			if w.gen[bottom][right].currentState {
 				neighbors++
 			}
 			// GoL rules
 			if neighbors == 3 {
-				(*w.nextGen)[y][x] = 1
-			} else if neighbors == 2 && (*w.currGen)[y][x] == 1 {
-				(*w.nextGen)[y][x] = 1
+				w.gen[y][x].futureState = true
+			} else if neighbors == 2 && w.gen[y][x].currentState {
+				w.gen[y][x].futureState = true
 			} else {
-				(*w.nextGen)[y][x] = 0
+				w.gen[y][x].futureState = false
 			}
 		}
 	}
@@ -97,13 +96,13 @@ func (w *World) Paint(res int) {
 	for y := 0; y < w.length; y++ {
 		for x := 0; x < w.length; x++ {
 			// Paint current cell
-			if (*w.currGen)[y][x] == 1 {
+			if w.gen[y][x].currentState {
 				w.ctx2d.Call("fillRect", x*res, y*res, res, res)
 			} else {
 				w.ctx2d.Call("clearRect", x*res, y*res, res, res)
 			}
 			// Copy new cell to current cell
-			(*w.currGen)[y][x] = (*w.nextGen)[y][x]
+			w.gen[y][x].currentState = w.gen[y][x].futureState
 		}
 	}
 }
