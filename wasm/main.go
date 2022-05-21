@@ -4,6 +4,8 @@ import (
 	"syscall/js"
 )
 
+var FPS float64 = 60.0
+
 func main() {
 	document := js.Global().Get("document")
 
@@ -27,12 +29,12 @@ func main() {
 
 	world := NewWorld(width, resolution, ctx2d)
 
-	var tMaxFPS float64 = 1000 / 60
+	var timeInterval float64 = 1000 / FPS
 	var repaint js.Func
 	var lastTimestamp float64
 	repaint = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		timestamp := args[0].Float()
-		if timestamp-lastTimestamp >= tMaxFPS {
+		if timestamp-lastTimestamp >= timeInterval {
 			world.Evolve()
 			world.Paint()
 			lastTimestamp = timestamp

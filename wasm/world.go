@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-// World is a 2D world
+// World is a 2D grid
 type World struct {
-	width      int
+	n          int
 	resolution int
 	gen        [][]cell
 	ctx2d      js.Value
@@ -20,19 +20,21 @@ type cell struct {
 }
 
 // NewWorld creates a new world and initializes first generation
-func NewWorld(width int, resolution int, ctx2d js.Value) *World {
+func NewWorld(n int, resolution int, ctx2d js.Value) *World {
 	rand.Seed(time.Now().UnixNano())
-	width = width / resolution
+	n = n / resolution
 	// Create first generation
-	gen := make([][]cell, width, width)
-	for y := 0; y < width; y++ {
-		gen[y] = make([]cell, width, width)
-		for x := 0; x < width; x++ {
-			gen[y][x] = createCell()
+	gen := make([][]cell, n, n)
+	for z := 0; z < n*n; z++ {
+		y := z / n
+		x := z % n
+		if x == 0 {
+			gen[y] = make([]cell, n, n)
 		}
+		gen[y][x] = createCell()
 	}
 	return &World{
-		width:      width,
+		n:          n,
 		resolution: resolution,
 		gen:        gen,
 		ctx2d:      ctx2d,
@@ -48,64 +50,64 @@ func createCell() cell {
 
 // Evolve creates next generation
 func (w *World) Evolve() {
-	for y := 0; y < w.width; y++ {
-		top := (y - 1 + w.width) % w.width
-		currY := (y + w.width) % w.width
-		bottom := (y + 1 + w.width) % w.width
-		for x := 0; x < w.width; x++ {
-			left := (x - 1 + w.width) % w.width
-			currX := (x + w.width) % w.width
-			right := (x + 1 + w.width) % w.width
-			// Find number of neighbors
-			neighbors := 0
-			if w.gen[top][left].currentState {
-				neighbors++
-			}
-			if w.gen[top][currX].currentState {
-				neighbors++
-			}
-			if w.gen[top][right].currentState {
-				neighbors++
-			}
-			if w.gen[currY][left].currentState {
-				neighbors++
-			}
-			if w.gen[currY][right].currentState {
-				neighbors++
-			}
-			if w.gen[bottom][left].currentState {
-				neighbors++
-			}
-			if w.gen[bottom][currX].currentState {
-				neighbors++
-			}
-			if w.gen[bottom][right].currentState {
-				neighbors++
-			}
-			// GoL rules
-			if neighbors == 3 {
-				w.gen[y][x].futureState = true
-			} else if neighbors == 2 && w.gen[y][x].currentState {
-				w.gen[y][x].futureState = true
-			} else {
-				w.gen[y][x].futureState = false
-			}
+	for z := 0; z < w.n*w.n; z++ {
+		y := z / w.n
+		x := z % w.n
+		top := (y - 1 + w.n) % w.n
+		currY := (y + w.n) % w.n
+		bottom := (y + 1 + w.n) % w.n
+		left := (x - 1 + w.n) % w.n
+		currX := (x + w.n) % w.n
+		right := (x + 1 + w.n) % w.n
+		// Find number of neighbors
+		neighbors := 0
+		if w.gen[top][left].currentState {
+			neighbors++
+		}
+		if w.gen[top][currX].currentState {
+			neighbors++
+		}
+		if w.gen[top][right].currentState {
+			neighbors++
+		}
+		if w.gen[currY][left].currentState {
+			neighbors++
+		}
+		if w.gen[currY][right].currentState {
+			neighbors++
+		}
+		if w.gen[bottom][left].currentState {
+			neighbors++
+		}
+		if w.gen[bottom][currX].currentState {
+			neighbors++
+		}
+		if w.gen[bottom][right].currentState {
+			neighbors++
+		}
+		// GoL rules
+		if neighbors == 3 {
+			w.gen[y][x].futureState = true
+		} else if neighbors == 2 && w.gen[y][x].currentState {
+			w.gen[y][x].futureState = true
+		} else {
+			w.gen[y][x].futureState = false
 		}
 	}
 }
 
 // Paint updates canvas & copy nextGen to currGen
 func (w *World) Paint() {
-	for y := 0; y < w.width; y++ {
-		for x := 0; x < w.width; x++ {
-			// Paint current cell
-			if w.gen[y][x].currentState {
-				w.ctx2d.Call("fillRect", x*w.resolution, y*w.resolution, w.resolution, w.resolution)
-			} else {
-				w.ctx2d.Call("clearRect", x*w.resolution, y*w.resolution, w.resolution, w.resolution)
-			}
-			// Copy new cell to current cell
-			w.gen[y][x].currentState = w.gen[y][x].futureState
+	for z := 0; z < w.n*w.n; z++ {
+		y := z / w.n
+		x := z % w.n
+		// Paint current cell
+		if w.gen[y][x].currentState {
+			w.ctx2d.Call("fillRect", x*w.resolution, y*w.resolution, w.resolution, w.resolution)
+		} else {
+			w.ctx2d.Call("clearRect", x*w.resolution, y*w.resolution, w.resolution, w.resolution)
 		}
+		// Copy new cell to current cell
+		w.gen[y][x].currentState = w.gen[y][x].futureState
 	}
 }
